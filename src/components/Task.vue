@@ -22,7 +22,7 @@
 
 <script>
 export default{
-    name: theTask
+    name: 'theTask'
 }
 </script>
 
@@ -34,7 +34,7 @@ export default{
   transition: opacity 0.3s;
 }
 
-.task:hover .bi-pencil {
+.task-item:hover .bi-pencil {
   opacity: 0.7;
 }
 
@@ -50,7 +50,7 @@ export default{
   transition: opacity 0.3s;
 }
 
-.task:hover .bi-trash {
+.task-item:hover .bi-trash {
   opacity: 0.7;
 }
 
@@ -59,7 +59,7 @@ export default{
   color:black;
 }
 
-.task {
+.task-item {
   background-color: #fdfdfd;
   border-radius: 12px;
   padding: 24px;

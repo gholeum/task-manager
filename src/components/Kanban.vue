@@ -24,6 +24,7 @@
           </div>
         </div>
         <div class="kanban__list">
+            <theTask/>
         </div>
       </section>
     </div>
@@ -31,8 +32,13 @@
   
   <script>
 
+  import theTask from './Task.vue'
+
   export default {
     name: 'theKanban',
+    components: {
+        theTask
+    },
     data() {
       return {
         columns: [
@@ -107,7 +113,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 100%;
+    padding: 0px 10px;
     min-height: 331px;
   }
 
@@ -117,7 +123,7 @@
   gap: 8px;
 }
 
-.bi {
+[class^="bi bi-hourglass"] {
   font-size: 1.5em;
   color: white;
 }
