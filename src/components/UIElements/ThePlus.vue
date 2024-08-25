@@ -1,0 +1,34 @@
+<template>
+  <div class="plus" @click="handleClick">
+    <i class="bi bi-plus"></i>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "thePlus",
+  props: {
+    columnId: {
+      type: String,
+      required: true,
+    },
+  },
+  methods: {
+    handleClick() {
+      this.$emit("add-task", this.columnId);
+    },
+  },
+};
+</script>
+
+<style>
+.bi-plus {
+  font-size: 2em;
+  color: rgb(77, 63, 63);
+}
+
+.plus:hover {
+  cursor: pointer;
+  opacity: 0.5;
+}
+</style>
