@@ -1,13 +1,11 @@
 <template>
-  <div id="app">
-    <theHeader @open-column-modal="openColumnModal" />
-    <theKanban :columns="columns" @add-column="addColumn" />
-    <modalAddColumn
-      :show="showColumnModal"
-      @close-modal="showColumnModal = false"
-      @create-column="addColumn"
-    />
-  </div>
+  <theHeader @open-column-modal="openColumnModal" />
+  <theKanban :columns="columns" @add-column="addColumn" />
+  <modalAddColumn
+    :show="showColumnModal"
+    @close-modal="showColumnModal = false"
+    @create-column="addColumn"
+  />
 </template>
 
 <script>

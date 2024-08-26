@@ -5,6 +5,7 @@
         v-if="isEditing"
         @blur="updateTitle"
         contenteditable="true"
+        spellcheck="false"
         :class="{ editing: isEditing }"
       >
         {{ editedTask.title }}
@@ -27,6 +28,7 @@
         v-if="isEditing"
         @blur="updateDescription"
         contenteditable="true"
+        spellcheck="false"
         :class="{ editing: isEditing }"
       >
         {{ editedTask.description }}
@@ -157,5 +159,11 @@ p {
 time {
   color: #02315e;
   font-size: 18px;
+}
+
+.editing {
+  border: 1px dashed #777;
+  border-radius: 3px;
+  padding: 0px 3px;
 }
 </style>
