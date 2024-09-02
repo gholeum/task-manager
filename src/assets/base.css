@@ -2,6 +2,7 @@
 @import url("https://fonts.googleapis.com/css2?family=PT+Sans&display=swap");
 
 body {
+  display: block;
   background-image: url("/src/assets/background.webp");
   background-repeat: repeat;
   background-attachment: fixed;
@@ -44,13 +45,7 @@ body {
 
 @media (min-width: 1400px) {
   #app {
-    max-width: 1320px;
-  }
-}
-
-@media (min-width: 1920px) {
-  #app {
-    max-width: 1810px;
+    max-width: 96%;
   }
 }
 

@@ -3,6 +3,7 @@
     <div class="task-head">
       <h3
         contenteditable="true"
+        spellcheck="false"
         :class="{ editing: isEditing }"
         :data-task-id="task.id"
       >
@@ -21,6 +22,7 @@
     <div>
       <p
         contenteditable="true"
+        spellcheck="false"
         :class="{ editing: isEditing }"
         :data-task-id="task.id"
       >
@@ -195,5 +197,11 @@ p {
 time {
   color: #02315e;
   font-size: 18px;
+}
+
+.editing {
+  border: 1px dashed #777;
+  border-radius: 3px;
+  padding: 0px 3px;
 }
 </style>
