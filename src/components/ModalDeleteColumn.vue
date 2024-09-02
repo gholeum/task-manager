@@ -2,7 +2,7 @@
   <BaseModal :show="show" @update:show="hideModal">
     <div class="confirm">
       <h5 class="confirm-text">
-        Вы уверены, что хотите удалить выбранную задачу?
+        Вы уверены, что хотите удалить выбранную колонку?
       </h5>
       <div class="buttons">
         <button class="refuse-button" @click="hideModal">Отмена</button>
@@ -16,19 +16,19 @@
 import BaseModal from "./UIElements/BaseModal.vue";
 
 export default {
-  name: "modalDeleteTask",
+  name: "modalDeleteBoard",
   components: { BaseModal },
   props: {
     show: { type: Boolean, default: false },
-    taskId: { type: [String, Number], required: true },
+    columnId: { type: [String, Number], required: true },
   },
-  emits: ["delete-task"],
+  emits: ["delete-board"],
   methods: {
     hideModal() {
       this.$emit("update:show", false);
     },
     confirmDelete() {
-      this.$emit("delete-task", this.taskId);
+      this.$emit("delete-column", this.columnId);
       this.hideModal();
     },
   },
