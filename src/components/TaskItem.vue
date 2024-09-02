@@ -2,15 +2,11 @@
   <div class="task-item" @keydown.enter.prevent="saveChanges">
     <div class="task-head">
       <h3
-        v-if="isEditing"
-        @blur="updateTitle"
         contenteditable="true"
         :class="{ editing: isEditing }"
+        :data-task-id="task.id"
       >
-        {{ editedTask.title }}
-      </h3>
-      <h3 v-else @click="toggleEdit">
-        {{ task.title }}
+        {{ task.name }}
       </h3>
       <div class="instruments">
         <div class="edit-task" @click="toggleEdit">
@@ -24,21 +20,17 @@
 
     <div>
       <p
-        v-if="isEditing"
-        @blur="updateDescription"
         contenteditable="true"
         :class="{ editing: isEditing }"
+        :data-task-id="task.id"
       >
-        {{ editedTask.description }}
-      </p>
-      <p v-else>
         {{ task.description }}
       </p>
 
       <div class="task-panel">
         <input v-if="isEditing" type="date" v-model="editedTask.date" />
         <div v-else>
-          <time>{{ formatDate(task.date) }}</time>
+          <time>{{ formatDate(task.plannedCompletionAt) }}</time>
         </div>
       </div>
     </div>
@@ -53,6 +45,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import modalDeleteTask from "./ModalDeleteTask.vue";
 
 export default {
@@ -61,6 +54,10 @@ export default {
   props: {
     task: {
       type: Object,
+      required: true,
+    },
+    boardId: {
+      type: String,
       required: true,
     },
   },
@@ -77,25 +74,62 @@ export default {
     },
     toggleEdit() {
       if (this.isEditing) {
-        this.isEditing = false;
-        this.$emit("update-task", { ...this.editedTask, id: this.task.id });
+        this.saveChanges();
       } else {
         this.isEditing = true;
+        this.editedTask = { ...this.task };
       }
     },
     saveChanges() {
-      this.isEditing = false;
-      this.$emit("update-task", { ...this.editedTask, id: this.task.id });
+      const taskTitleElement = document.querySelector(
+        `h3[contenteditable][data-task-id="${this.task.id}"]`
+      );
+      const taskDescriptionElement = document.querySelector(
+        `p[contenteditable][data-task-id="${this.task.id}"]`
+      );
+
+      if (taskTitleElement) {
+        this.editedTask.title = taskTitleElement.innerText;
+      }
+      if (taskDescriptionElement) {
+        this.editedTask.description = taskDescriptionElement.innerText;
+      }
+
+      const token = localStorage.getItem("token");
+
+      const formData = {
+        formData: {
+          statusId: this.task.statusId,
+          name: this.editedTask.title,
+          description: this.editedTask.description,
+          plannedCompletionAt: this.editedTask.date,
+        },
+      };
+
+      axios
+        .put(
+          `https://todo-list.edu-playground.ru/api/v1/boards/${this.boardId}/tasks/${this.task.id}`,
+          formData,
+          {
+            headers: {
+              "X-Base-Auth": token,
+            },
+          }
+        )
+        .then(() => {
+          this.isEditing = false;
+          this.$emit("update-task", { ...this.editedTask, id: this.task.id });
+        })
+        .catch((error) => {
+          console.error("Ошибка обновления задачи:", error);
+        });
     },
-    updateTitle(event) {
-      this.editedTask.title = event.target.innerText;
-    },
-    updateDescription(event) {
-      this.editedTask.description = event.target.innerText;
-    },
-    reverseDate(date) {
-      if (!date) return "";
-      const [year, month, day] = date.split("-");
+
+    reverseDate(dateString) {
+      const date = new Date(dateString);
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
       return `${day}.${month}.${year}`;
     },
     formatDate(date) {
@@ -152,6 +186,10 @@ h3 {
 
 p {
   color: black;
+}
+
+.editable {
+  border: 1px dashed #777;
 }
 
 time {

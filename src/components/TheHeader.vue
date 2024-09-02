@@ -2,7 +2,6 @@
   <div class="header__container">
     <h1 class="header__title">Таск-менеджер</h1>
     <div class="header__option">
-      <thePlus @click="$emit('open-column-modal')" />
       <div class="header__user-icon">
         <i class="bi bi-person-fill"></i>
       </div>
@@ -11,13 +10,8 @@
 </template>
 
 <script>
-import thePlus from "./UIElements/ThePlus.vue";
-
 export default {
   name: "theHeader",
-  components: {
-    thePlus,
-  },
 };
 </script>
 
