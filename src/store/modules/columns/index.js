@@ -15,49 +15,32 @@ const columnStore = {
     setColumns(state, columns) {
       state.columns = columns;
     },
-    addColumn(state, column) {
-      state.columns.push(column);
-    },
-    editColumn(state, { columnId, name }) {
-      const column = state.columns.find((c) => c.id === columnId);
-      if (column) {
-        column.name = name;
-      }
-    },
-    removeColumn(state, columnId) {
-      state.columns = state.columns.filter((column) => column.id !== columnId);
-    },
-    toggleEditMode(state, columnId) {
-      const column = state.columns.find((c) => c.id === columnId);
-      if (column) {
-        column.isEditing = !column.isEditing;
-      }
-    },
-    setSelectedColumnId(state, columnId) {
-      state.selectedColumnId = columnId;
-    },
   },
   actions: {
     async fetchColumns({ commit }, boardId) {
       const token = localStorage.getItem("token");
       try {
-        const response = await fetch(
+        const response = await axios.get(
           `https://todo-list.edu-playground.ru/api/v1/boards/${boardId}/statuses`,
           {
             headers: { "X-Base-Auth": token },
           }
         );
-        if (response.ok) {
-          const data = await response.json();
-          commit("setColumns", data);
-        } else if (response.status === 403) {
-          alert("Доступ к группе запрещен");
-        }
+        commit("setColumns", response.data);
       } catch (error) {
-        console.error("Ошибка при получении данных:", error);
+        if (error.response) {
+          if (error.response.status === 403) {
+            alert("Доступ к группе запрещен");
+          } else {
+            console.error("Ошибка при получении данных:", error.response.data);
+          }
+        } else {
+          console.error("Ошибка при получении данных:", error);
+        }
       }
     },
-    async createColumn({ commit }, { columnTitle, boardId }) {
+
+    async createColumn(store, { columnTitle, boardId }) {
       const token = localStorage.getItem("token");
       const formData = { formData: { name: columnTitle } };
       try {
@@ -69,13 +52,14 @@ const columnStore = {
           }
         );
         if (response.status === 201) {
-          commit("addColumn", response.data);
+          columnStore.actions.fetchColumns(store, boardId);
         }
       } catch (error) {
         console.error("Ошибка при создании колонки:", error);
       }
     },
-    async deleteColumn({ commit }, { columnId, boardId }) {
+
+    async deleteColumn(store, { columnId, boardId }) {
       const token = localStorage.getItem("token");
       try {
         const response = await axios.delete(
@@ -85,15 +69,15 @@ const columnStore = {
           }
         );
         if (response.status === 204) {
-          commit("removeColumn", columnId);
+          columnStore.actions.fetchColumns(store, boardId);
         }
       } catch (error) {
         console.error("Ошибка при удалении колонки:", error);
       }
     },
-    async updateColumn({ commit }, { columnId, boardId, name }) {
+    async updateColumn(store, { columnId, boardId, formData }) {
       const token = localStorage.getItem("token");
-      const formData = { formData: { name } };
+
       try {
         const response = await axios.put(
           `https://todo-list.edu-playground.ru/api/v1/boards/${boardId}/statuses/${columnId}`,
@@ -103,7 +87,7 @@ const columnStore = {
           }
         );
         if (response.status === 200) {
-          commit("editColumn", { columnId, name });
+          columnStore.actions.fetchColumns(store, boardId);
         }
       } catch (error) {
         console.error("Ошибка при обновлении колонки:", error);

@@ -4,15 +4,15 @@ import KanbanBoard from "../components/KanbanBoard.vue";
 import LoginPage from "../components/LoginPage.vue";
 
 const routes = [
-  { path: "/", component: BoardList },
+  { path: "/", component: BoardList, meta: { requiresAuth: true } },
   {
     path: "/board/:boardId",
     name: "KanbanBoard",
     component: KanbanBoard,
     props: (route) => ({
       boardId: route.params.boardId,
-      boardName: route.query.boardName,
     }),
+    meta: { requiresAuth: true },
   },
   { path: "/login", component: LoginPage },
 ];
@@ -26,18 +26,14 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
 
-  if (token && userId) {
-    if (to.path === "/login") {
-      next({ path: "/" });
-    } else {
-      next();
-    }
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+
+  if (requiresAuth && !(token && userId)) {
+    next({ path: "/login" });
+  } else if (to.path === "/login" && token && userId) {
+    next({ path: "/" });
   } else {
-    if (to.path !== "/login") {
-      next({ path: "/login" });
-    } else {
-      next();
-    }
+    next();
   }
 });
 

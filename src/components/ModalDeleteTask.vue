@@ -22,7 +22,7 @@ export default {
     show: { type: Boolean, default: false },
     taskId: { type: [String, Number], required: true },
   },
-  emits: ["delete-task"],
+  emits: ["delete-task", "update:show"],
   methods: {
     hideModal() {
       this.$emit("update:show", false);

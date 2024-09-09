@@ -1,12 +1,19 @@
 <template>
-  <div class="task-item" @keydown.enter.prevent="saveChanges">
+  <div
+    class="task-item"
+    @keydown.enter.prevent="saveChanges"
+    draggable="true"
+    @dragstart="handleDragStart"
+    @dragend="handleDragEnd"
+  >
     <div class="task-head">
       <h3
-        contenteditable="true"
+        :contenteditable="isEditing"
         spellcheck="false"
         :class="{ editing: isEditing }"
         :data-task-id="task.id"
         ref="taskTitle"
+        @input="editName"
       >
         {{ editedTask.name }}
       </h3>
@@ -21,11 +28,12 @@
     </div>
     <div>
       <p
-        contenteditable="true"
+        :contenteditable="isEditing"
         spellcheck="false"
         :class="{ editing: isEditing }"
         :data-task-id="task.id"
         ref="taskDescription"
+        @input="editDescription"
       >
         {{ editedTask.description }}
       </p>
@@ -64,6 +72,17 @@ export default {
     };
   },
   methods: {
+    ...mapActions("tasks", ["updateTask"]),
+
+    handleDragStart(event) {
+      event.dataTransfer.setData("text/plain", this.task.id);
+      event.target.classList.add("dragging");
+    },
+
+    handleDragEnd(event) {
+      event.target.classList.remove("dragging");
+    },
+
     openDeleteModal() {
       this.showDeleteModal = true;
     },
@@ -75,10 +94,16 @@ export default {
         this.editedTask = { ...this.task };
       }
     },
+    editName(event) {
+      this.editedTask.name = event.target.innerText;
+    },
+    editDescription(event) {
+      this.editedTask.description = event.target.innerText;
+    },
     async saveChanges() {
-      await this.updateTask({ task: this.editedTask, boardId: this.boardId });
+      await this.updateTask({ task: this.editedTask });
       this.isEditing = false;
-      this.$emit("update-task", { ...this.editedTask, id: this.task.id });
+      this.$emit("update-task", boardId);
     },
     reverseDate(dateString) {
       const date = new Date(dateString);
@@ -90,7 +115,6 @@ export default {
     formatDate(date) {
       return this.reverseDate(date);
     },
-    ...mapActions("taskStore", ["updateTask"]),
   },
 };
 </script>
@@ -146,5 +170,8 @@ time {
   border: 1px dashed #777;
   border-radius: 3px;
   padding: 0 3px;
+}
+.dragging {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 </style>

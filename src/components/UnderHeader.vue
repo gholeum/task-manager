@@ -1,4 +1,3 @@
-vue
 <template>
   <div class="under-header__container">
     <div class="title">
@@ -17,6 +16,7 @@ vue
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import thePlus from "./UIElements/ThePlus.vue";
 
 export default {
@@ -29,14 +29,13 @@ export default {
       type: String,
       required: true,
     },
-    boardName: {
-      type: String,
-      required: true,
-    },
   },
   computed: {
+    ...mapGetters({
+      currentBoardName: "boards/getCurrentBoardName",
+    }),
     currentPageTitle() {
-      return this.currentPage === "boards" ? "Доски" : this.boardName;
+      return this.currentPage === "boards" ? "Доски" : this.currentBoardName;
     },
     currentPlusTitle() {
       return this.currentPage === "boards"

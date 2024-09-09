@@ -2,30 +2,24 @@ import axios from "axios";
 
 const boardStore = {
   namespaced: true,
-  state: { boards: [] },
+  state: {
+    boards: [],
+    currentBoardName: "",
+  },
   getters: {
     getAllBoards(state) {
       return state.boards;
+    },
+    getCurrentBoardName(state) {
+      return state.currentBoardName;
     },
   },
   mutations: {
     setBoards(state, boards) {
       state.boards = boards;
     },
-    addBoard(state, board) {
-      state.boards.push(board);
-    },
-    removeBoard(state, boardId) {
-      state.boards = state.boards.filter((board) => board.id !== boardId);
-    },
-    updateBoard(state, { boardId, formData }) {
-      const boardIndex = state.boards.findIndex(
-        (board) => board.id === boardId
-      );
-      if (boardIndex !== -1) {
-        state.boards[boardIndex].name = formData.name;
-        state.boards[boardIndex].description = formData.description;
-      }
+    setCurrentBoardName(state, name) {
+      state.currentBoardName = name;
     },
   },
   actions: {
@@ -50,7 +44,7 @@ const boardStore = {
         console.error("Ошибка загрузки досок:", error);
       }
     },
-    async createBoard({ commit }, board) {
+    async createBoard(store, board) {
       const userId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
 
@@ -63,14 +57,14 @@ const boardStore = {
           }
         );
         if (response.status === 201) {
-          commit("addBoard", { ...response.data });
+          boardStore.actions.fetchBoards(store);
         }
       } catch (error) {
         console.error("Ошибка создания доски:", error);
       }
     },
 
-    async updateBoard({ commit }, { boardId, formData }) {
+    async updateBoard(store, { boardId, formData }) {
       const userId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
 
@@ -82,13 +76,13 @@ const boardStore = {
             headers: { "X-Base-Auth": token },
           }
         );
-        commit("updateBoard", { boardId, formData });
+        boardStore.actions.fetchBoards(store);
       } catch (error) {
         throw error;
       }
     },
 
-    async deleteBoard({ commit }, boardId) {
+    async deleteBoard(store, boardId) {
       const userId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
 
@@ -100,11 +94,15 @@ const boardStore = {
           }
         );
         if (response.status === 204) {
-          commit("removeBoard", boardId);
+          boardStore.actions.fetchBoards(store);
         }
       } catch (error) {
         console.error("Ошибка удаления доски:", error);
       }
+    },
+
+    setBoardName({ commit }, name) {
+      commit("setCurrentBoardName", name);
     },
   },
 };

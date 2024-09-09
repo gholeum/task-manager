@@ -50,12 +50,12 @@ const taskStore = {
         console.error("Ошибка при получении задач:", error);
       }
     },
-    async createTask({ commit }, { task, boardId }) {
+    async createTask(store, { task, boardId }) {
       const token = localStorage.getItem("token");
       const formData = {
         formData: {
           statusId: task.columnId,
-          name: task.name,
+          name: task.title,
           description: task.description,
           plannedCompletionAt: task.date,
         },
@@ -69,7 +69,7 @@ const taskStore = {
           }
         );
         if (response.status === 201) {
-          commit("addTask", response.data);
+          taskStore.actions.fetchTasks(store, boardId);
         }
       } catch (error) {
         console.error("Ошибка при создании задачи:", error);
@@ -91,7 +91,8 @@ const taskStore = {
         console.error("Ошибка при удалении задачи:", error);
       }
     },
-    async updateTask({ commit }, { task, boardId }) {
+    async updateTask(store, { task }) {
+      console.log(task);
       const token = localStorage.getItem("token");
       const formData = {
         formData: {
@@ -103,14 +104,14 @@ const taskStore = {
       };
       try {
         const response = await axios.put(
-          `https://todo-list.edu-playground.ru/api/v1/boards/${boardId}/tasks/${task.id}`,
+          `https://todo-list.edu-playground.ru/api/v1/boards/${task.boardId}/tasks/${task.id}`,
           formData,
           {
             headers: { "X-Base-Auth": token },
           }
         );
         if (response.status === 200) {
-          commit("updateTask", task);
+          taskStore.actions.fetchTasks(store, task.boardId);
         }
       } catch (error) {
         console.error("Ошибка обновления задачи:", error);

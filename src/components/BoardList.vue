@@ -60,7 +60,7 @@
     </div>
   </div>
 
-  <errorMessage v-if="errorMessages.length" :messages="errorMessages" />
+  <!-- <errorMessage v-if="errorMessages.length" :messages="errorMessages" /> -->
   <modalAddBoard
     :show="showModal"
     @update:show="showModal = false"
@@ -79,7 +79,7 @@ import { mapGetters, mapActions } from "vuex";
 import modalAddBoard from "./ModalAddBoard.vue";
 import modalDeleteBoard from "./ModalDeleteBoard.vue";
 import underHeader from "./UnderHeader.vue";
-import errorMessage from "./UIElements/ErrorMessage.vue";
+// import errorMessage from "./UIElements/ErrorMessage.vue";
 
 export default {
   name: "BoardList",
@@ -87,7 +87,7 @@ export default {
     modalAddBoard,
     modalDeleteBoard,
     underHeader,
-    errorMessage,
+    // errorMessage,
   },
   data() {
     return {
@@ -113,6 +113,7 @@ export default {
       "createBoard",
       "deleteBoard",
       "updateBoard",
+      "setBoardName",
     ]),
 
     formatDate(dateString) {
@@ -204,10 +205,10 @@ export default {
     goToKanban(boardId) {
       const board = this.getAllBoards.find((b) => b.id === boardId);
       const boardName = board.name;
+      this.setBoardName(boardName);
       this.$router.push({
         name: "KanbanBoard",
         params: { boardId },
-        query: { boardName },
       });
     },
   },

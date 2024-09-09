@@ -1,7 +1,6 @@
 <template>
   <underHeader
     :currentPage="currentPage"
-    :boardName="boardName"
     @open-column-modal="showColumnModal = true"
   />
   <div class="kanban">
@@ -15,10 +14,11 @@
     <template v-else>
       <section
         v-for="column in columns"
+        @dragover.prevent
+        @drop="handleDrop(column.id)"
         :key="column.id"
         :class="`kanban__column kanban__column--${column.id}`"
         :data-column-id="column.id"
-        @keydown.enter.prevent="saveColumn(column.id)"
       >
         <div class="kanban__header">
           <div class="kanban__header-content">
@@ -108,6 +108,7 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
+import axios from "axios";
 import theTask from "./TaskItem.vue";
 import theModal from "./ModalAddTask.vue";
 import modalAddColumn from "./ModalAddColumn.vue";
@@ -127,7 +128,6 @@ export default {
   },
   props: {
     boardId: { type: String, required: true },
-    boardName: { type: String, required: true },
   },
   data() {
     return {
@@ -177,16 +177,33 @@ export default {
       this.showDeleteModal = false;
     },
 
-    async updateColumnName(columnId, event) {
-      const name = event.target.innerText.trim();
-      if (name) {
-        await this.updateColumn({ columnId, boardId: this.boardId, name });
+    toggleEditMode(columnId) {
+      const column = this.columns.find((c) => c.id === columnId);
+      if (column) {
+        if (column.isEditing) {
+          this.saveColumn(columnId);
+        }
+        column.isEditing = !column.isEditing;
       }
     },
 
-    toggleEditMode(columnId) {
-      this.setSelectedColumnId(columnId);
-      this.toggleEditMode(columnId);
+    async saveColumn(columnId) {
+      const boardId = this.boardId;
+      const column = this.columns.find((c) => c.id === columnId);
+
+      const columnTitleElement = document.querySelector(
+        `h2[contenteditable][data-column-id="${columnId}"]`
+      );
+
+      const formData = {
+        formData: {
+          name: columnTitleElement.innerText,
+        },
+      };
+
+      await this.updateColumn({ columnId, boardId, formData });
+
+      column.isEditing = false;
     },
 
     async addTask(task) {
@@ -196,6 +213,28 @@ export default {
 
     async removeTask(taskId) {
       await this.deleteTask({ taskId, boardId: this.boardId });
+    },
+
+    async handleDrop(columnId) {
+      const taskId = event.dataTransfer.getData("text/plain");
+      const token = localStorage.getItem("token");
+
+      try {
+        await axios.patch(
+          `https://todo-list.edu-playground.ru/api/v1/boards/${this.boardId}/tasks/${taskId}`,
+          {
+            formData: {
+              statusId: columnId,
+            },
+          },
+          {
+            headers: { "X-Base-Auth": token },
+          }
+        );
+        await this.fetchTasks(this.boardId);
+      } catch (error) {
+        console.error("Ошибка при обновлении задачи:", error);
+      }
     },
   },
 };
