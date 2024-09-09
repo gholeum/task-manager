@@ -9,7 +9,7 @@ export default {
   name: "thePlus",
   props: {
     columnId: {
-      type: String,
+      type: Number,
       required: true,
     },
   },

@@ -22,7 +22,7 @@ export default {
     show: { type: Boolean, default: false },
     boardId: { type: [String, Number], required: true },
   },
-  emits: ["delete-board"],
+  emits: ["update:show", "delete-board"],
   methods: {
     hideModal() {
       this.$emit("update:show", false);

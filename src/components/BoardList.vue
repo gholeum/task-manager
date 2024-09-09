@@ -4,12 +4,7 @@
     @open-board-modal="showModal = true"
   />
   <div class="kanban">
-    <section
-      v-for="board in boards"
-      :key="board.id"
-      class="boards"
-      @keydown.enter.prevent="saveBoard(board.id)"
-    >
+    <section v-for="board in getAllBoards" :key="board.id" class="boards">
       <div class="board__header">
         <div class="board__header-content">
           <h2
@@ -57,13 +52,15 @@
         </div>
       </div>
     </section>
-    <div v-if="boards.length === 0" class="boards">
+    <div v-if="getAllBoards.length === 0" class="boards">
       <div class="no-boards-message">
         <p>У вас ещё нет досок. Давайте создадим!</p>
         <a href="#" class="create" @click="showModal = true">Создать</a>
       </div>
     </div>
   </div>
+
+  <errorMessage v-if="errorMessages.length" :messages="errorMessages" />
   <modalAddBoard
     :show="showModal"
     @update:show="showModal = false"
@@ -78,65 +75,65 @@
 </template>
 
 <script>
-import axios from "axios";
+import { mapGetters, mapActions } from "vuex";
 import modalAddBoard from "./ModalAddBoard.vue";
 import modalDeleteBoard from "./ModalDeleteBoard.vue";
 import underHeader from "./UnderHeader.vue";
+import errorMessage from "./UIElements/ErrorMessage.vue";
 
 export default {
   name: "BoardList",
-  components: { modalAddBoard, modalDeleteBoard, underHeader },
+  components: {
+    modalAddBoard,
+    modalDeleteBoard,
+    underHeader,
+    errorMessage,
+  },
   data() {
     return {
-      boards: [],
       showModal: false,
       showDeleteModal: false,
-      selectedBoardId: Number,
+      selectedBoardId: null,
       currentPage: "boards",
       errorMessage: "",
     };
+  },
+  computed: {
+    ...mapGetters("boards", ["getAllBoards"]),
+    errorMessages() {
+      return this.errorMessage ? [this.errorMessage] : [];
+    },
   },
   mounted() {
     this.fetchBoards();
   },
   methods: {
-    async fetchBoards() {
-      const userId = localStorage.getItem("userId");
-      const token = localStorage.getItem("token");
-      try {
-        const response = await axios.get(
-          `https://todo-list.edu-playground.ru/api/v1/user/${userId}/boards`,
-          { headers: { "X-Base-Auth": token } }
-        );
-        if (response.status === 200) {
-          this.boards = response.data.map((board) => ({
-            ...board,
-            isEditing: false,
-          }));
-        }
-      } catch (error) {
-        this.errorMessage = error.response
-          ? error.response.data.cause
-          : "Ошибка загрузки";
-      }
-    },
+    ...mapActions("boards", [
+      "fetchBoards",
+      "createBoard",
+      "deleteBoard",
+      "updateBoard",
+    ]),
+
     formatDate(dateString) {
       const options = { year: "numeric", month: "2-digit", day: "2-digit" };
       return new Date(dateString).toLocaleDateString("ru-RU", options);
     },
+
     toggleEditMode(boardId) {
-      const board = this.boards.find((b) => b.id === boardId);
+      const board = this.getAllBoards.find((b) => b.id === boardId);
       if (board) {
         if (board.isEditing) {
           this.saveBoard(boardId);
+        } else {
+          board.isEditing = true;
         }
-        board.isEditing = !board.isEditing;
       }
     },
+
     async saveBoard(boardId) {
-      const userId = localStorage.getItem("userId");
-      const token = localStorage.getItem("token");
-      const board = this.boards.find((b) => b.id === boardId);
+      this.errorMessage = [];
+      const board = this.getAllBoards.find((b) => b.id === boardId);
 
       const boardTitleElement = document.querySelector(
         `h2[contenteditable][data-board-id="${boardId}"]`
@@ -145,9 +142,28 @@ export default {
         `p.board-description[contenteditable][data-board-id="${boardId}"]`
       );
 
-      if (boardTitleElement && boardDescriptionElement) {
-        board.name = boardTitleElement.innerText;
-        board.description = boardDescriptionElement.innerText;
+      if (!boardTitleElement || !boardDescriptionElement) {
+        console.error(`Editable elements for boardId ${boardId} not found.`);
+        return;
+      }
+
+      board.name = boardTitleElement.innerText;
+      board.description = boardDescriptionElement.innerText;
+
+      if (board.name.length < 5) {
+        this.errorMessage.push(
+          "Название доски должно содержать не менее 5 символов."
+        );
+      }
+
+      if (board.description.length < 5) {
+        this.errorMessage.push(
+          "Описание доски должно содержать не менее 5 символов."
+        );
+      }
+
+      if (this.errorMessage.length > 0) {
+        return;
       }
 
       const formData = {
@@ -158,35 +174,24 @@ export default {
       };
 
       try {
-        await axios.put(
-          `https://todo-list.edu-playground.ru/api/v1/user/${userId}/boards/${boardId}`,
-          formData,
-          {
-            headers: { "X-Base-Auth": token },
-          }
-        );
+        await this.updateBoard({ boardId, formData });
         board.isEditing = false;
       } catch (error) {
-        this.errorMessage = error.response
-          ? error.response.data.cause
-          : "Ошибка обновления";
+        this.errorMessage.push(
+          error.response ? error.response.data.cause : "Ошибка редактирования"
+        );
       }
     },
+
     openDeleteModal(boardId) {
       this.selectedBoardId = boardId;
       this.showDeleteModal = true;
     },
+
     async confirmDelete(boardId) {
-      const userId = localStorage.getItem("userId");
-      const token = localStorage.getItem("token");
       try {
-        const response = await axios.delete(
-          `https://todo-list.edu-playground.ru/api/v1/user/${userId}/boards/${boardId}`,
-          { headers: { "X-Base-Auth": token } }
-        );
-        if (response.status === 204) {
-          this.fetchBoards();
-        }
+        await this.deleteBoard(boardId);
+        await this.fetchBoards();
       } catch (error) {
         this.errorMessage = error.response
           ? error.response.data.cause
@@ -195,13 +200,14 @@ export default {
         this.showDeleteModal = false;
       }
     },
+
     goToKanban(boardId) {
-      const board = this.boards.find((b) => b.id === boardId);
+      const board = this.getAllBoards.find((b) => b.id === boardId);
       const boardName = board.name;
       this.$router.push({
         name: "KanbanBoard",
         params: { boardId },
-        query: { boardName: boardName },
+        query: { boardName },
       });
     },
   },

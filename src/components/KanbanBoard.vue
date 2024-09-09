@@ -55,7 +55,6 @@
                 </div>
               </div>
             </div>
-
             <thePlus
               :column-id="column.id"
               @add-task="setSelectedColumnId"
@@ -92,14 +91,12 @@
       @create="addTask"
       :column-id="selectedColumnId"
     />
-
     <modalAddColumn
       :show="showColumnModal"
       @update:show="showColumnModal = $event"
       @create="addColumn"
       @close-modal="showColumnModal = false"
     />
-
     <modalDeleteColumn
       :show="showDeleteModal"
       :columnId="selectedColumnId"
@@ -110,13 +107,13 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from "vuex";
 import theTask from "./TaskItem.vue";
 import theModal from "./ModalAddTask.vue";
 import modalAddColumn from "./ModalAddColumn.vue";
 import modalDeleteColumn from "./ModalDeleteColumn.vue";
 import thePlus from "./UIElements/ThePlus.vue";
 import underHeader from "./UnderHeader.vue";
-import axios from "axios";
 
 export default {
   name: "theKanban",
@@ -134,210 +131,71 @@ export default {
   },
   data() {
     return {
-      columns: [],
       showModal: false,
       showColumnModal: false,
       showDeleteModal: false,
-      selectedColumnId: "",
-      tasks: [],
-      boardId: this.$route.params.boardId,
     };
   },
+  computed: {
+    ...mapGetters("columns", ["getAllColumns"]),
+    ...mapGetters("tasks", ["getAllTasks"]),
+    columns() {
+      return this.getAllColumns;
+    },
+    tasks() {
+      return this.getAllTasks;
+    },
+  },
   mounted() {
-    this.fetchColumns();
-    this.fetchTasks();
+    this.fetchColumns(this.boardId);
+    this.fetchTasks(this.boardId);
   },
   methods: {
-    async fetchColumns() {
-      const token = localStorage.getItem("token");
-      try {
-        const response = await fetch(
-          `https://todo-list.edu-playground.ru/api/v1/boards/${this.boardId}/statuses`,
-          {
-            headers: {
-              "X-Base-Auth": token,
-            },
-          }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          this.columns = data;
-        } else if (response.status === 403) {
-          alert("Доступ к группе запрещен");
-          this.columns = [];
-        }
-      } catch (error) {
-        console.error("Ошибка при получении данных:", error);
-      }
-    },
-
-    async fetchTasks() {
-      const token = localStorage.getItem("token");
-      try {
-        const response = await fetch(
-          `https://todo-list.edu-playground.ru/api/v1/boards/${this.boardId}/tasks`,
-          {
-            headers: {
-              "X-Base-Auth": token,
-            },
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          this.tasks = data.flatMap((item) => item.tasks);
-        } else if (response.status === 403) {
-          alert("Доступ к группе запрещен");
-          this.tasks = [];
-        }
-      } catch (error) {
-        console.error("Ошибка при получении данных:", error);
-      }
-    },
-
-    async addColumn(columnTitle) {
-      const boardId = this.boardId;
-      const token = localStorage.getItem("token");
-
-      const formData = {
-        formData: {
-          name: columnTitle,
-        },
-      };
-
-      try {
-        await axios.post(
-          `https://todo-list.edu-playground.ru/api/v1/boards/${boardId}/statuses`,
-          formData,
-          {
-            headers: { "X-Base-Auth": token },
-          }
-        );
-        this.showColumnModal = false;
-        this.fetchColumns();
-      } catch (error) {
-        this.errorMessage = error.response
-          ? error.response.data.cause
-          : "Ошибка обновления";
-      }
-    },
+    ...mapActions("columns", [
+      "fetchColumns",
+      "createColumn",
+      "deleteColumn",
+      "updateColumn",
+      "setSelectedColumnId",
+    ]),
+    ...mapActions("tasks", ["fetchTasks", "createTask", "deleteTask"]),
 
     setSelectedColumnId(columnId) {
       this.selectedColumnId = columnId;
     },
 
-    async confirmDelete(columnId) {
-      const boardId = this.boardId;
-      const token = localStorage.getItem("token");
-      try {
-        const response = await axios.delete(
-          `https://todo-list.edu-playground.ru/api/v1/boards/${boardId}/statuses/${columnId}`,
-          { headers: { "X-Base-Auth": token } }
-        );
-        if (response.status === 204) {
-          this.fetchColumns();
-        }
-      } catch (error) {
-        this.errorMessage = error.response
-          ? error.response.data.cause
-          : "Ошибка удаления";
-      } finally {
-        this.showDeleteModal = false;
+    async addColumn(columnTitle) {
+      await this.createColumn({ columnTitle, boardId: this.boardId });
+      this.showColumnModal = false;
+    },
+
+    async confirmDelete() {
+      await this.deleteColumn({
+        columnId: this.selectedColumnId,
+        boardId: this.boardId,
+      });
+      this.showDeleteModal = false;
+    },
+
+    async updateColumnName(columnId, event) {
+      const name = event.target.innerText.trim();
+      if (name) {
+        await this.updateColumn({ columnId, boardId: this.boardId, name });
       }
     },
 
     toggleEditMode(columnId) {
-      const column = this.columns.find((c) => c.id === columnId);
-      if (column) {
-        if (column.isEditing) {
-          this.saveColumn(columnId);
-        }
-        column.isEditing = !column.isEditing;
-      }
-    },
-
-    async saveColumn(columnId) {
-      const boardId = this.boardId;
-      const token = localStorage.getItem("token");
-      const column = this.columns.find((c) => c.id === columnId);
-
-      const columnTitleElement = document.querySelector(
-        `h2[contenteditable][data-column-id="${columnId}"]`
-      );
-
-      if (columnTitleElement) {
-        column.name = columnTitleElement.innerText;
-      }
-
-      const formData = {
-        formData: {
-          name: column.name,
-        },
-      };
-
-      try {
-        await axios.put(
-          `https://todo-list.edu-playground.ru/api/v1/boards/${boardId}/statuses/${columnId}`,
-          formData,
-          {
-            headers: { "X-Base-Auth": token },
-          }
-        );
-        column.isEditing = false;
-      } catch (error) {
-        this.errorMessage = error.response
-          ? error.response.data.cause
-          : "Ошибка обновления";
-      }
+      this.setSelectedColumnId(columnId);
+      this.toggleEditMode(columnId);
     },
 
     async addTask(task) {
-      task.columnId = this.selectedColumnId;
-      const boardId = this.boardId;
-      const token = localStorage.getItem("token");
-
-      const formData = {
-        formData: {
-          statusId: task.columnId,
-          name: task.title,
-          description: task.description,
-          plannedCompletionAt: task.date,
-        },
-      };
-
-      try {
-        await axios.post(
-          `https://todo-list.edu-playground.ru/api/v1/boards/${boardId}/tasks`,
-          formData,
-          {
-            headers: { "X-Base-Auth": token },
-          }
-        );
-        this.showModal = false;
-        this.fetchTasks();
-      } catch (error) {
-        this.errorMessage = error.response
-          ? error.response.data.cause
-          : "Ошибка обновления";
-      }
+      await this.createTask({ task, boardId: this.boardId });
+      this.showModal = false;
     },
 
     async removeTask(taskId) {
-      const boardId = this.boardId;
-      const token = localStorage.getItem("token");
-      try {
-        const response = await axios.delete(
-          `https://todo-list.edu-playground.ru/api/v1/boards/${boardId}/tasks/${taskId}`,
-          { headers: { "X-Base-Auth": token } }
-        );
-        if (response.status === 204) {
-          this.fetchTasks();
-        }
-      } catch (error) {
-        this.errorMessage = error.response
-          ? error.response.data.cause
-          : "Ошибка удаления";
-      }
+      await this.deleteTask({ taskId, boardId: this.boardId });
     },
   },
 };

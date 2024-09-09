@@ -16,13 +16,13 @@
 import BaseModal from "./UIElements/BaseModal.vue";
 
 export default {
-  name: "modalDeleteBoard",
+  name: "modalDeleteColumn",
   components: { BaseModal },
   props: {
     show: { type: Boolean, default: false },
     columnId: { type: [String, Number], required: true },
   },
-  emits: ["delete-board"],
+  emits: ["delete-column"],
   methods: {
     hideModal() {
       this.$emit("update:show", false);
