@@ -2,6 +2,7 @@
   <underHeader
     :currentPage="currentPage"
     @open-column-modal="showColumnModal = true"
+    @open-board-user-modal="showBoardUserModal = true"
   />
   <div class="kanban">
     <template v-if="columns.length === 0">
@@ -103,6 +104,12 @@
       @update:show="showDeleteModal = false"
       @delete-column="confirmDelete"
     />
+
+    <ModalBoardUser
+      :show="showBoardUserModal"
+      :boardId="boardId"
+      @update:show="showBoardUserModal = false"
+    />
   </div>
 </template>
 
@@ -113,6 +120,7 @@ import theTask from "./TaskItem.vue";
 import theModal from "./ModalAddTask.vue";
 import modalAddColumn from "./ModalAddColumn.vue";
 import modalDeleteColumn from "./ModalDeleteColumn.vue";
+import ModalBoardUser from "./ModalBoardUser.vue";
 import thePlus from "./UIElements/ThePlus.vue";
 import underHeader from "./UnderHeader.vue";
 
@@ -124,6 +132,7 @@ export default {
     theModal,
     modalAddColumn,
     modalDeleteColumn,
+    ModalBoardUser,
     underHeader,
   },
   props: {
@@ -134,6 +143,7 @@ export default {
       showModal: false,
       showColumnModal: false,
       showDeleteModal: false,
+      showBoardUserModal: false,
     };
   },
   computed: {

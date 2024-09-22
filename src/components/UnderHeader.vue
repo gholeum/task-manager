@@ -11,7 +11,15 @@
       </div>
       <h2 class="under-header__title">{{ currentPageTitle }}</h2>
     </div>
-    <thePlus :title="currentPlusTitle" @click="openThePlus" />
+    <div class="under-header__instruments">
+      <i
+        v-if="currentPage !== 'boards'"
+        class="bi bi-people-fill"
+        title="Управление пользователями доски"
+        @click="openUsers"
+      ></i>
+      <thePlus :title="currentPlusTitle" @click="openThePlus" />
+    </div>
   </div>
 </template>
 
@@ -52,6 +60,9 @@ export default {
     goBack() {
       this.$router.push("/");
     },
+    openUsers() {
+      this.$emit("open-board-user-modal");
+    },
   },
 };
 </script>
@@ -76,5 +87,24 @@ export default {
   margin-right: 10px;
   font-size: 1.5em;
   color: #02315e;
+}
+
+.under-header__instruments {
+  color: black;
+  display: flex;
+  gap: 10px;
+  font-size: 1em;
+  align-items: center;
+  justify-content: center;
+}
+
+.bi-people-fill {
+  opacity: 70%;
+  transition: opacity 0.3s;
+}
+
+.bi-people-fill:hover {
+  opacity: 100%;
+  cursor: pointer;
 }
 </style>
