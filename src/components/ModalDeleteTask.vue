@@ -16,7 +16,7 @@
 import BaseModal from "./UIElements/BaseModal.vue";
 
 export default {
-  name: "modalDeleteTask",
+  name: "ModalDeleteTask",
   components: { BaseModal },
   props: {
     show: { type: Boolean, default: false },

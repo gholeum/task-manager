@@ -27,7 +27,7 @@
 import BaseModal from "./UIElements/BaseModal.vue";
 
 export default {
-  name: "modalAddTask",
+  name: "ModalAddTask",
   components: { BaseModal },
   props: {
     show: { type: Boolean, default: false },

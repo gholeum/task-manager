@@ -44,7 +44,7 @@
         </div>
       </div>
     </div>
-    <modalDeleteTask
+    <ModalDeleteTask
       :show="showDeleteModal"
       :task-id="task.id"
       @update:show="showDeleteModal = false"
@@ -55,11 +55,11 @@
 
 <script>
 import { mapActions } from "vuex";
-import modalDeleteTask from "./ModalDeleteTask.vue";
+import ModalDeleteTask from "./ModalDeleteTask.vue";
 
 export default {
-  name: "theTask",
-  components: { modalDeleteTask },
+  name: "TaskItem",
+  components: { ModalDeleteTask },
   props: {
     task: { type: Object, required: true },
     boardId: { type: String, required: true },

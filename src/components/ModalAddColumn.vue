@@ -20,7 +20,7 @@
 import BaseModal from "./UIElements/BaseModal.vue";
 
 export default {
-  name: "modalAddColumn",
+  name: "ModalAddColumn",
   components: { BaseModal },
   props: {
     show: { type: Boolean, required: true },

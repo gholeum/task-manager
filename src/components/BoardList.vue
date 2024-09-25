@@ -1,5 +1,5 @@
 <template>
-  <underHeader
+  <UnderHeader
     :currentPage="currentPage"
     @open-board-modal="showModal = true"
   />
@@ -60,13 +60,12 @@
     </div>
   </div>
 
-  <!-- <errorMessage v-if="errorMessages.length" :messages="errorMessages" /> -->
-  <modalAddBoard
+  <ModalAddBoard
     :show="showModal"
     @update:show="showModal = false"
     @board-created="fetchBoards"
   />
-  <modalDeleteBoard
+  <ModalDeleteBoard
     :show="showDeleteModal"
     :boardId="selectedBoardId"
     @update:show="showDeleteModal = false"
@@ -76,18 +75,16 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
-import modalAddBoard from "./ModalAddBoard.vue";
-import modalDeleteBoard from "./ModalDeleteBoard.vue";
-import underHeader from "./UnderHeader.vue";
-// import errorMessage from "./UIElements/ErrorMessage.vue";
+import ModalAddBoard from "./ModalAddBoard.vue";
+import ModalDeleteBoard from "./ModalDeleteBoard.vue";
+import UnderHeader from "./UnderHeader.vue";
 
 export default {
   name: "BoardList",
   components: {
-    modalAddBoard,
-    modalDeleteBoard,
-    underHeader,
-    // errorMessage,
+    ModalAddBoard,
+    ModalDeleteBoard,
+    UnderHeader,
   },
   data() {
     return {
@@ -161,10 +158,6 @@ export default {
         this.errorMessage.push(
           "Описание доски должно содержать не менее 5 символов."
         );
-      }
-
-      if (this.errorMessage.length > 0) {
-        return;
       }
 
       const formData = {

@@ -16,7 +16,7 @@
 import BaseModal from "./UIElements/BaseModal.vue";
 
 export default {
-  name: "modalDeleteColumn",
+  name: "ModalDeleteColumn",
   components: { BaseModal },
   props: {
     show: { type: Boolean, default: false },

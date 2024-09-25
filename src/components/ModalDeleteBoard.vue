@@ -16,7 +16,7 @@
 import BaseModal from "./UIElements/BaseModal.vue";
 
 export default {
-  name: "modalDeleteBoard",
+  name: "ModalDeleteBoard",
   components: { BaseModal },
   props: {
     show: { type: Boolean, default: false },

@@ -18,19 +18,19 @@
         title="Управление пользователями доски"
         @click="openUsers"
       ></i>
-      <thePlus :title="currentPlusTitle" @click="openThePlus" />
+      <ThePlus :title="currentPlusTitle" @click="openThePlus" />
     </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
-import thePlus from "./UIElements/ThePlus.vue";
+import ThePlus from "./UIElements/ThePlus.vue";
 
 export default {
-  name: "underHeader",
+  name: "UnderHeader",
   components: {
-    thePlus,
+    ThePlus,
   },
   props: {
     currentPage: {

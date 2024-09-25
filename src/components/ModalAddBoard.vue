@@ -30,7 +30,7 @@ import BaseModal from "./UIElements/BaseModal.vue";
 import axios from "axios";
 
 export default {
-  name: "modalAddBoard",
+  name: "ModalAddBoard",
   components: { BaseModal },
   props: {
     show: { type: Boolean, default: false },

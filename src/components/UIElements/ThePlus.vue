@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  name: "thePlus",
+  name: "ThePlus",
   props: {
     columnId: {
       type: Number,

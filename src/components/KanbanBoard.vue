@@ -1,5 +1,5 @@
 <template>
-  <underHeader
+  <UnderHeader
     :currentPage="currentPage"
     @open-column-modal="showColumnModal = true"
     @open-board-user-modal="showBoardUserModal = true"
@@ -56,7 +56,7 @@
                 </div>
               </div>
             </div>
-            <thePlus
+            <ThePlus
               :column-id="column.id"
               @add-task="setSelectedColumnId"
               @click="showModal = true"
@@ -71,7 +71,7 @@
             >
               <p>В этой колонке ещё нет задач</p>
             </div>
-            <theTask
+            <TaskItem
               v-for="task in tasks.filter(
                 (task) => task.statusId === column.id
               )"
@@ -86,19 +86,19 @@
       </section>
     </template>
 
-    <theModal
+    <ModalAddTask
       :show="showModal"
       @update:show="showModal = $event"
       @create="addTask"
       :column-id="selectedColumnId"
     />
-    <modalAddColumn
+    <ModalAddColumn
       :show="showColumnModal"
       @update:show="showColumnModal = $event"
       @create="addColumn"
       @close-modal="showColumnModal = false"
     />
-    <modalDeleteColumn
+    <ModalDeleteColumn
       :show="showDeleteModal"
       :columnId="selectedColumnId"
       @update:show="showDeleteModal = false"
@@ -116,24 +116,24 @@
 <script>
 import { mapGetters, mapActions } from "vuex";
 import axios from "axios";
-import theTask from "./TaskItem.vue";
-import theModal from "./ModalAddTask.vue";
-import modalAddColumn from "./ModalAddColumn.vue";
-import modalDeleteColumn from "./ModalDeleteColumn.vue";
+import TaskItem from "./TaskItem.vue";
+import ModalAddTask from "./ModalAddTask.vue";
+import ModalAddColumn from "./ModalAddColumn.vue";
+import ModalDeleteColumn from "./ModalDeleteColumn.vue";
 import ModalBoardUser from "./ModalBoardUser.vue";
-import thePlus from "./UIElements/ThePlus.vue";
-import underHeader from "./UnderHeader.vue";
+import ThePlus from "./UIElements/ThePlus.vue";
+import UnderHeader from "./UnderHeader.vue";
 
 export default {
   name: "theKanban",
   components: {
-    theTask,
-    thePlus,
-    theModal,
-    modalAddColumn,
-    modalDeleteColumn,
+    TaskItem,
+    ThePlus,
+    ModalAddTask,
+    ModalAddColumn,
+    ModalDeleteColumn,
     ModalBoardUser,
-    underHeader,
+    UnderHeader,
   },
   props: {
     boardId: { type: String, required: true },
